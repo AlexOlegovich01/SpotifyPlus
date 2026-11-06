@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.svg" width="128" alt="SpotifyPlus logo">
+</p>
+
 # SpotifyPlus
 
 🇷🇺 [Русская версия](README.ru.md)
