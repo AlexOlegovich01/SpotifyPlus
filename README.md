@@ -19,7 +19,7 @@ A [Tampermonkey](https://www.tampermonkey.net/) userscript that adds handy featu
 | Mouse wheel over the **progress bar** | Seek ±20 seconds |
 | **Space** | Play / pause |
 | **Ctrl + → / Ctrl + ←** | Next / previous track |
-| **Ctrl + C** (nothing selected) | Copy the current track as `Artist — Title` |
+| **Ctrl + C** (nothing selected) | Copy the track shown in the player bar as `Artist — Title` (works while playing or paused) |
 
 Hotkeys are ignored while you are typing in a text field (for example, the search box). If text is selected, **Ctrl + C** works as the normal copy command.
 
@@ -32,6 +32,7 @@ Hotkeys are ignored while you are typing in a text field (for example, the searc
 ## Notes
 
 - The script finds Spotify's controls through `data-testid` attributes (for example `volume-bar`, `playback-progressbar`, `control-button-playpause`). Spotify may change them in an update; if a feature stops working, check the selectors at the top of the script's second half with your browser's DevTools and adjust them.
+- If **Ctrl + C** does not copy the track, open the browser console (F12 → Console): the script logs `[SpotifyPlus]` messages explaining what happened.
 - The script runs only on `https://open.spotify.com/*` and requires no special permissions (`@grant none`).
 
 ## Version

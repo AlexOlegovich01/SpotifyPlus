@@ -173,13 +173,31 @@
   }
 
   function currentTrackString() {
-    const widget = document.querySelector('[data-testid="now-playing-widget"]') || document;
-    const title = widget.querySelector('[data-testid="context-item-info-title"]');
-    const artist = widget.querySelector('[data-testid="context-item-info-artist"]');
-    if (!title) return '';
-    const t = title.textContent.trim();
-    const a = artist ? artist.textContent.trim() : '';
-    return a ? a + ' — ' + t : t;
+    const widget = document.querySelector('[data-testid="now-playing-widget"]')
+      || document.querySelector('[data-testid="now-playing-bar"]')
+      || document;
+    // Ищем по data-testid, а если не вышло — по структуре нижней панели:
+    // первая ссылка с текстом — название, остальные — исполнители (работает и на паузе)
+    let title = widget.querySelector('[data-testid="context-item-link"], [data-testid="context-item-info-title"]');
+    let artists = [...widget.querySelectorAll(
+      '[data-testid="context-item-info-artist"], [data-testid="context-item-info-subtitles"] a'
+    )].map((el) => el.textContent.trim()).filter(Boolean);
+    if (!title || !artists.length) {
+      const links = [...widget.querySelectorAll('a')].filter((el) => el.textContent.trim());
+      if (!title) title = links[0] || null;
+      if (!artists.length) {
+        artists = links.filter((el) => el !== title && !el.contains(title) && !title.contains(el))
+          .map((el) => el.textContent.trim());
+      }
+    }
+    if (title) {
+      const t = title.textContent.trim();
+      const a = [...new Set(artists)].join(', ');
+      return a ? a + ' — ' + t : t;
+    }
+    // Запасной вариант: во время воспроизведения заголовок вкладки "Название • Артист"
+    const m = document.title.match(/^(.+?) • (.+)$/);
+    return m ? m[2] + ' — ' + m[1] : '';
   }
 
   window.addEventListener('keydown', (e) => {
@@ -194,9 +212,16 @@
       handled = true;
     } else if (e.ctrlKey && !e.shiftKey && e.code === 'KeyC') {
       // Обычное копирование выделенного текста не трогаем
-      if (String(window.getSelection()).length > 0) return;
+      if (String(window.getSelection()).length > 0) {
+        console.debug('[SpotifyPlus] Ctrl+C: есть выделенный текст, обычное копирование');
+        return;
+      }
       const text = currentTrackString();
-      if (!text) return;
+      if (!text) {
+        console.warn('[SpotifyPlus] Ctrl+C: не удалось определить трек (нижняя панель пуста или изменилась разметка)');
+        return;
+      }
+      console.debug('[SpotifyPlus] Скопировано:', text);
       copyText(text);
       handled = true;
     }
